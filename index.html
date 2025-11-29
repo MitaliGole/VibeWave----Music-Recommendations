@@ -1,0 +1,401 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>VibeWave — Music Recommendation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0f1724; /* deep navy */
+      --card:#0b1220;
+      --muted:#94a3b8;
+      --accent:#6C63FF;
+      --accent-2:#FF6584;
+      --glass: rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;}
+    body{
+      margin:0;
+      font-family:Inter,system-ui,Segoe UI,Roboto,Arial;
+      background: linear-gradient(180deg,#071023 0%, #0f1724 100%);
+      color:#e6eef8;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      line-height:1.35;
+      padding-bottom:90px; /* room for player */
+    }
+    a{color:inherit;text-decoration:none}
+    .container{max-width:1100px;margin:36px auto;padding:0 20px}
+
+    /* Header */
+    header{display:flex;align-items:center;justify-content:space-between;padding:14px 0}
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{width:46px;height:46px;border-radius:10px;background:linear-gradient(135deg,var(--accent),var(--accent-2));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff}
+    nav{display:flex;gap:18px;align-items:center}
+    nav a{color:var(--muted);font-weight:600;padding:8px 12px;border-radius:8px}
+    nav a:hover{color:#fff;background:var(--glass)}
+
+    /* Hero */
+    .hero{display:grid;grid-template-columns:1fr 360px;gap:28px;align-items:center;margin:22px 0}
+    .hero-card{padding:28px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));box-shadow: 0 6px 24px rgba(2,6,23,0.6)}
+    .title{font-size:28px;font-weight:800;margin:0 0 8px}
+    .subtitle{color:var(--muted);margin-bottom:18px}
+    .search{display:flex;gap:8px}
+    .search input{flex:1;padding:12px 14px;border-radius:10px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit;outline:none}
+    .search button{padding:10px 14px;border-radius:10px;border:none;background:var(--accent);color:#fff;font-weight:700;cursor:pointer}
+
+    .hero-right{padding:18px;border-radius:12px;background:linear-gradient(90deg, rgba(108,99,255,0.07), rgba(255,101,132,0.03));min-height:160px;display:flex;flex-direction:column;gap:12px;justify-content:center}
+    .stat{display:flex;align-items:center;gap:12px}
+    .big{font-weight:800;font-size:20px}
+    .muted{color:var(--muted);font-weight:600}
+
+    /* Moods */
+    .moods{margin:20px 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
+    .mood{padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));cursor:pointer;display:flex;align-items:center;gap:10px;border:1px solid transparent}
+    .mood:hover{transform:translateY(-4px);transition:all 160ms}
+    .mood.active{box-shadow:0 6px 20px rgba(108,99,255,0.12);border-color:rgba(108,99,255,0.16)}
+    .mood .emoji{font-size:20px}
+    .mood .label{font-weight:700}
+
+    /* Song grid */
+    .songs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin:18px 0}
+    .song{display:flex;gap:12px;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));align-items:center}
+    .art{width:64px;height:64px;border-radius:8px;flex-shrink:0;background-size:cover;background-position:center}
+    .meta{flex:1}
+    .song-title{font-weight:700}
+    .song-artist{color:var(--muted);font-size:13px;margin-top:4px}
+    .song-actions{display:flex;flex-direction:column;gap:8px}
+    .btn{border:none;padding:8px 10px;border-radius:10px;cursor:pointer;font-weight:700}
+    .btn.play{background:linear-gradient(90deg,var(--accent),var(--accent-2));color:#fff}
+    .btn.add{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+
+    /* Playlists */
+    .playlists{display:flex;gap:12px;overflow:auto;padding-bottom:6px}
+    .plist{min-width:220px;padding:14px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));display:flex;flex-direction:column;gap:8px}
+    .plist .pl-title{font-weight:800}
+    .plist .pl-desc{color:var(--muted);font-size:13px}
+
+    /* Footer */
+    footer{margin-top:28px;padding:24px 0;border-top:1px solid rgba(255,255,255,0.02);color:var(--muted);display:flex;justify-content:space-between}
+
+    /* Mini player */
+    .player{position:fixed;left:0;right:0;bottom:0;height:76px;background:linear-gradient(90deg, rgba(3,7,18,0.9), rgba(6,11,25,0.95));display:flex;align-items:center;gap:16px;padding:10px 20px;border-top:1px solid rgba(255,255,255,0.03)}
+    .player .p-left{display:flex;align-items:center;gap:12px}
+    .p-art{width:56px;height:56px;border-radius:8px;background-size:cover}
+    .p-meta{min-width:0}
+    .p-title{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .p-artist{color:var(--muted);font-size:13px}
+    .p-controls{display:flex;align-items:center;gap:10px;margin-left:20px}
+    .icon-btn{background:transparent;border:none;color:#fff;padding:8px;border-radius:8px;cursor:pointer}
+    .progress{flex:1;margin-left:12px;margin-right:12px}
+    input[type=range]{width:100%}
+
+    /* Responsive */
+    @media (max-width:880px){
+      .hero{grid-template-columns:1fr;}
+      .hero-right{order:2}
+      .hero-card{order:1}
+    }
+
+    @media (max-width:520px){
+      .logo{width:40px;height:40px}
+      .title{font-size:22px}
+      .song{padding:10px}
+      .art{width:56px;height:56px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="logo">VW</div>
+        <div>
+          <div style="font-weight:800">VibeWave</div>
+          <div style="font-size:12px;color:var(--muted)">Music for every mood</div>
+        </div>
+      </div>
+      <nav>
+        <a href="#">Home</a>
+        <a href="#moods">Moods</a>
+        <a href="#top">Top Songs</a>
+        <a href="#playlists">Playlists</a>
+        <a href="#about">About</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="hero-card hero">
+        <div>
+          <h1 class="title">Find the perfect song for every mood</h1>
+          <p class="subtitle">Search by song, artist or mood — and play instantly. Try "chill", "sad" or "workout".</p>
+
+          <div class="search">
+            <input id="searchInput" placeholder="Search songs, artists, or moods..." />
+            <button id="searchBtn">Search</button>
+          </div>
+
+          <div style="margin-top:18px">
+            <strong style="font-weight:700">Quick filters:</strong>
+            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+              <button class="btn" onclick="applyMood('chill')">Chill</button>
+              <button class="btn" onclick="applyMood('happy')">Happy</button>
+              <button class="btn" onclick="applyMood('sad')">Sad</button>
+              <button class="btn" onclick="applyMood('workout')">Workout</button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="hero-right">
+          <div class="stat"><div class="big">1200+</div><div class="muted">Handpicked songs</div></div>
+          <div class="stat"><div class="big">50+</div><div class="muted">Curated playlists</div></div>
+          <div class="stat"><div class="big">Mood-based recommendations</div></div>
+        </aside>
+      </section>
+
+      <section id="moods">
+        <h2 style="margin:18px 0 8px">Browse by mood</h2>
+        <div class="moods" id="moodGrid"></div>
+      </section>
+
+      <section id="results">
+        <h2 style="margin:18px 0 8px">Recommended songs</h2>
+        <div class="songs" id="songsGrid"></div>
+      </section>
+
+      <section id="playlists">
+        <h2 style="margin:18px 0 8px">Featured playlists</h2>
+        <div class="playlists" id="playlistsRow"></div>
+      </section>
+
+      <footer>
+        <div>© VibeWave 2025</div>
+        <div>Made with ♥ — Replace demo audio with your own files before publishing.</div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Mini Player -->
+  <div class="player" id="miniPlayer">
+    <div class="p-left">
+      <div class="p-art" id="pArt" style="background-image:url('');"></div>
+      <div class="p-meta">
+        <div class="p-title" id="pTitle">Not playing</div>
+        <div class="p-artist" id="pArtist">—</div>
+      </div>
+    </div>
+    <div class="p-controls">
+      <button class="icon-btn" id="prevBtn" title="Previous">⏮️</button>
+      <button class="icon-btn" id="playPauseBtn" title="Play/Pause">▶️</button>
+      <button class="icon-btn" id="nextBtn" title="Next">⏭️</button>
+    </div>
+    <div class="progress">
+      <input type="range" id="seek" value="0" min="0" step="1">
+    </div>
+    <div style="width:120px;text-align:right;color:var(--muted);font-size:13px">RockNRoll</div>
+  </div>
+
+  <script>
+    /***** Demo data: replace audio src with your own files when you deploy *****/
+    const songs = [
+      {id:1,title:'Sunny Days',artist:'M. Rivers',mood:'happy',art:'https://images.unsplash.com/photo-1526178616607-1f3b9c8a9b6c?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&s=1',src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3',duration:0},
+      {id:2,title:'Midnight Loops',artist:'LoFi Lab',mood:'chill',art:'https://images.unsplash.com/photo-1507878866276-a947ef722fee?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&s=2',src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3',duration:0},
+      {id:3,title:'Push Through',artist:'BeatRise',mood:'workout',art:'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&s=3',src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3',duration:0},
+      {id:4,title:'Rainy Window',artist:'Blue Echo',mood:'sad',art:'https://images.unsplash.com/photo-1502082553048-f009c37129b9?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&s=4',src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3',duration:0},
+      {id:5,title:'Road Trip',artist:'Open Skies',mood:'travel',art:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&s=5',src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3',duration:0},
+      {id:6,title:'Heart Strings',artist:'Velvet Tone',mood:'romantic',art:'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&s=6',src:'https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3',duration:0}
+    ];
+
+    const moods = [
+      {id:'happy',emoji:'😊',label:'Happy'},
+      {id:'sad',emoji:'😭',label:'Sad'},
+      {id:'chill',emoji:'🎧',label:'Chill'},
+      {id:'romantic',emoji:'❤️',label:'Romantic'},
+      {id:'workout',emoji:'🔥',label:'Workout'},
+      {id:'travel',emoji:'🚗',label:'Travel'},
+      {id:'sleep',emoji:'😴',label:'Sleep/LoFi'}
+    ];
+
+    // Playlists demo
+    const playlists = [
+      {title:'Chill Vibes',desc:'Lo-fi and mellow beats',cover:'https://images.unsplash.com/photo-1507878866276-a947ef722fee?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&s=2'},
+      {title:'Workout Pump',desc:'High energy tracks',cover:'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&s=3'},
+      {title:'Roadtrip Mix',desc:'Songs for the open road',cover:'https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=400&auto=format&fit=crop&ixlib=rb-4.0.3&s=5'}
+    ];
+
+    // State
+    let currentMood = null;
+    let filtered = songs.slice();
+    let currentIndex = -1;
+
+    // Audio element
+    const audio = new Audio();
+    audio.crossOrigin = 'anonymous';
+
+    // Elements
+    const moodGrid = document.getElementById('moodGrid');
+    const songsGrid = document.getElementById('songsGrid');
+    const playlistsRow = document.getElementById('playlistsRow');
+    const searchInput = document.getElementById('searchInput');
+    const searchBtn = document.getElementById('searchBtn');
+
+    const pArt = document.getElementById('pArt');
+    const pTitle = document.getElementById('pTitle');
+    const pArtist = document.getElementById('pArtist');
+    const playPauseBtn = document.getElementById('playPauseBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const seek = document.getElementById('seek');
+
+    // Init UI
+    function init(){
+      renderMoods();
+      renderSongs(songs);
+      renderPlaylists();
+      attachEvents();
+    }
+
+    function renderMoods(){
+      moodGrid.innerHTML='';
+      moods.forEach(m=>{
+        const d = document.createElement('div');
+        d.className='mood';
+        d.id = 'mood-'+m.id;
+        d.innerHTML = `<div class="emoji">${m.emoji}</div><div class="label">${m.label}</div>`;
+        d.addEventListener('click', ()=>{
+          document.querySelectorAll('.mood').forEach(x=>x.classList.remove('active'));
+          d.classList.add('active');
+          applyMood(m.id);
+        });
+        moodGrid.appendChild(d);
+      });
+    }
+
+    function renderSongs(list){
+      songsGrid.innerHTML='';
+      list.forEach((s,idx)=>{
+        const card = document.createElement('div');
+        card.className='song';
+        card.innerHTML = `
+          <div class="art" style="background-image:url('${s.art}')"></div>
+          <div class="meta">
+            <div class="song-title">${s.title}</div>
+            <div class="song-artist">${s.artist} · ${capitalize(s.mood)}</div>
+          </div>
+          <div class="song-actions">
+            <button class="btn play" data-idx="${idx}">Play</button>
+            <button class="btn add">Add</button>
+          </div>
+        `;
+        // Play button
+        card.querySelector('.btn.play').addEventListener('click', ()=>{
+          const globalIdx = songs.indexOf(list[idx]);
+          playIndex(globalIdx);
+        });
+        songsGrid.appendChild(card);
+      });
+    }
+
+    function renderPlaylists(){
+      playlistsRow.innerHTML='';
+      playlists.forEach(p=>{
+        const el = document.createElement('div');
+        el.className='plist';
+        el.innerHTML = `
+          <div style="background-image:url('${p.cover}');height:110px;border-radius:8px;background-size:cover;background-position:center"></div>
+          <div class="pl-title">${p.title}</div>
+          <div class="pl-desc">${p.desc}</div>
+        `;
+        playlistsRow.appendChild(el);
+      });
+    }
+
+    function attachEvents(){
+      searchBtn.addEventListener('click', ()=>{
+        const q = searchInput.value.trim().toLowerCase();
+        if(!q){ renderSongs(songs); return; }
+        const res = songs.filter(s=> s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q) || s.mood.toLowerCase().includes(q));
+        renderSongs(res);
+      });
+
+      // audio events
+      audio.addEventListener('timeupdate', ()=>{
+        if(audio.duration && !isNaN(audio.duration)){
+          seek.max = Math.floor(audio.duration);
+          seek.value = Math.floor(audio.currentTime);
+        }
+      });
+      audio.addEventListener('ended', ()=>{ nextTrack(); });
+
+      playPauseBtn.addEventListener('click', togglePlay);
+      prevBtn.addEventListener('click', prevTrack);
+      nextBtn.addEventListener('click', nextTrack);
+      seek.addEventListener('input', ()=>{ audio.currentTime = seek.value; });
+
+      // keyboard: space to play/pause
+      window.addEventListener('keydown', (e)=>{
+        if(e.code === 'Space'){ e.preventDefault(); togglePlay(); }
+      });
+    }
+
+    function applyMood(moodId){
+      currentMood = moodId;
+      filtered = songs.filter(s=> s.mood === moodId);
+      if(filtered.length===0){ // if no songs match, show similar
+        filtered = songs.filter(s=> s.mood.includes(moodId) || s.title.toLowerCase().includes(moodId));
+      }
+      renderSongs(filtered);
+    }
+
+    function playIndex(i){
+      if(i < 0 || i >= songs.length) return;
+      const s = songs[i];
+      currentIndex = i;
+      audio.src = s.src;
+      audio.play();
+      updatePlayerUI(s);
+      playPauseBtn.textContent = '⏸️';
+    }
+
+    function togglePlay(){
+      if(!audio.src){
+        // default play first from filtered list
+        playIndex(0);
+        return;
+      }
+      if(audio.paused){ audio.play(); playPauseBtn.textContent='⏸️'; }
+      else { audio.pause(); playPauseBtn.textContent='▶️'; }
+    }
+
+    function prevTrack(){
+      if(currentIndex <= 0) currentIndex = songs.length - 1;
+      else currentIndex -= 1;
+      playIndex(currentIndex);
+    }
+    function nextTrack(){
+      if(currentIndex >= songs.length -1) currentIndex = 0;
+      else currentIndex += 1;
+      playIndex(currentIndex);
+    }
+
+    function updatePlayerUI(song){
+      pArt.style.backgroundImage = `url('${song.art}')`;
+      pTitle.textContent = song.title;
+      pArtist.textContent = song.artist;
+    }
+
+    function capitalize(s){ if(!s) return s; return s[0].toUpperCase()+s.slice(1); }
+
+    // Init app
+    init();
+
+    // Helpful: expose functions to window for console tinkering
+    window.applyMood = applyMood;
+    window.playIndex = playIndex;
+  </script>
+</body>
+</html>
